@@ -3,19 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Socket.IO Чат</title>
-    <link rel="stylesheet" href="/src/styles/main.scss" />
+    <title>Socket.IO Чаты</title>
   </head>
   <body>
     <div class="app">
-      <!-- Шапка приложения -->
       <header class="app__header">
         <div>
-          <p class="eyebrow">Socket.IO Chat</p>
-          <h1>Sanntidsmeldinger</h1>
+          <p class="eyebrow">Socket.IO</p>
+          <h1>Два чата, одно окно</h1>
           <p class="lede">
-            Start serveren og klienten, skriv en melding og se hvordan den umiddelbart
-            vises for alle tilkoblede brukere.
+            Переключайся между комнатами, отправляй сообщения и смотри, как они
+            синхронно прилетают во всех открытых вкладках.
           </p>
         </div>
         <div class="status status--connecting" id="status">
@@ -24,39 +22,48 @@
         </div>
       </header>
 
-      <!-- Основная часть чата -->
+      <div class="panel switcher" id="roomSwitcher" role="tablist" aria-label="Комнаты">
+        <button class="switcher__tab is-active" data-room="general" role="tab" aria-selected="true">
+          Общий
+        </button>
+        <button class="switcher__tab" data-room="team" role="tab" aria-selected="false">
+          Команда
+        </button>
+        <div class="switcher__info">
+          Активный чат: <span id="activeRoomLabel">Общий</span>
+        </div>
+      </div>
+
       <main class="chat">
-        <!-- Боковая панель -->
         <section class="chat__sidebar">
           <div class="panel">
             <label class="field">
-              <span class="field__label">Navn</span>
+              <span class="field__label">Имя</span>
               <input
                 id="usernameInput"
                 type="text"
                 maxlength="24"
-                placeholder="F.eks. Nova"
+                placeholder="Например, Nova"
               />
             </label>
             <div class="hint">
-              <p>• Skriv meldinger og se dem i sanntid</p>
-              <p>• Åpne chaten i flere vinduer for å teste</p>
-              <p>• Meldinger synkroniseres automatisk</p>
+              <p>• Сообщения хранятся в памяти сервера</p>
+              <p>• Открой чат в двух окнах и переключай комнаты</p>
+              <p>• Вкладки синхронизируются через Socket.IO</p>
             </div>
           </div>
         </section>
 
-        <!-- Панель с сообщениями -->
         <section class="chat__panel">
           <div class="messages" id="messagesContainer" aria-live="polite"></div>
           <form class="composer" id="messageForm">
             <input
               id="messageInput"
               type="text"
-              placeholder="Skriv en melding..."
+              placeholder="Написать сообщение..."
             />
             <button type="submit" id="sendButton" disabled>
-              Send
+              Отправить
             </button>
           </form>
         </section>
