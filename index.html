@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket.IO Чат</title>
+    <link rel="stylesheet" href="/src/styles/index.scss" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- Шапка приложения -->
+      <header class="app__header">
+        <div>
+          <p class="eyebrow">Socket.IO Chat</p>
+          <h1>Sanntidsmeldinger</h1>
+          <p class="lede">
+            Start serveren og klienten, skriv en melding og se hvordan den umiddelbart
+            vises for alle tilkoblede brukere.
+          </p>
+        </div>
+        <div class="status status--connecting" id="status">
+          <span class="status__dot"></span>
+          <span class="status__text">connecting...</span>
+        </div>
+      </header>
+
+      <!-- Основная часть чата -->
+      <main class="chat">
+        <!-- Боковая панель -->
+        <section class="chat__sidebar">
+          <div class="panel">
+            <label class="field">
+              <span class="field__label">Navn</span>
+              <input
+                id="usernameInput"
+                type="text"
+                maxlength="24"
+                placeholder="F.eks. Nova"
+              />
+            </label>
+            <div class="hint">
+              <p>• npm run dev — klient + server</p>
+              <p>• Meldinger lagres i serverens minne</p>
+              <p>• Åpne en annen nettleser for å se synkronisering</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Панель с сообщениями -->
+        <section class="chat__panel">
+          <div class="messages" id="messagesContainer" aria-live="polite"></div>
+          <form class="composer" id="messageForm">
+            <input
+              id="messageInput"
+              type="text"
+              placeholder="Skriv en melding..."
+            />
+            <button type="submit" id="sendButton" disabled>
+              Send
+            </button>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
