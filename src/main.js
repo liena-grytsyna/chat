@@ -5,11 +5,11 @@ import { io } from 'socket.io-client'
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? 'http://localhost:3001'
 
 const ROOM_LABELS = {
-  general: 'Общий',
-  team: 'Команда',
+  general: 'Felles',
+  team: 'Team',
 }
 
-let username = `Guest-${Math.floor(Math.random() * 900 + 100)}`
+let username = `Gjest-${Math.floor(Math.random() * 900 + 100)}`
 let currentRoom = 'general'
 const roomMessages = new Map()
 let socket = null
@@ -39,16 +39,16 @@ function initSocket() {
   })
 
   socket.on('connect', () => {
-    updateStatus('connected', 'online')
+    updateStatus('connected', 'tilkoblet')
     joinRoom(currentRoom)
   })
 
   socket.on('disconnect', () => {
-    updateStatus('disconnected', 'disconnected')
+    updateStatus('disconnected', 'frakoblet')
   })
 
   socket.on('connect_error', () => {
-    updateStatus('error', 'error')
+    updateStatus('error', 'feil')
   })
 
   socket.on('chat:history', ({ room, history = [] } = {}) => {
@@ -69,7 +69,7 @@ function initSocket() {
     }
   })
 
-  updateStatus('connecting', 'connecting...')
+  updateStatus('connecting', 'kobler til...')
   socket.connect()
 }
 
@@ -110,7 +110,7 @@ function sendMessage(event) {
   if (!text || !socket?.connected) return
 
   socket.emit('chat:message', {
-    user: usernameInput.value.trim() || 'Guest',
+    user: usernameInput.value.trim() || 'Gjest',
     text,
     room: currentRoom,
   })

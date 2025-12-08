@@ -1,36 +1,35 @@
 <!doctype html>
-<html lang="ru">
+<html lang="no">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Socket.IO Чаты</title>
+    <title>Socket.IO chatter</title>
   </head>
   <body>
     <div class="app">
       <header class="app__header">
         <div>
           <p class="eyebrow">Socket.IO</p>
-          <h1>Два чата, одно окно</h1>
+          <h1>chatter</h1>
           <p class="lede">
-            Переключайся между комнатами, отправляй сообщения и смотри, как они
-            синхронно прилетают во всех открытых вкладках.
+            hi hi
           </p>
         </div>
         <div class="status status--connecting" id="status">
           <span class="status__dot"></span>
-          <span class="status__text">connecting...</span>
+          <span class="status__text">kobler til...</span>
         </div>
       </header>
 
-      <div class="panel switcher" id="roomSwitcher" role="tablist" aria-label="Комнаты">
+      <div class="panel switcher" id="roomSwitcher" role="tablist" aria-label="Rom">
         <button class="switcher__tab is-active" data-room="general" role="tab" aria-selected="true">
-          Общий
+          Felles
         </button>
         <button class="switcher__tab" data-room="team" role="tab" aria-selected="false">
-          Команда
+          Team
         </button>
         <div class="switcher__info">
-          Активный чат: <span id="activeRoomLabel">Общий</span>
+          Aktivt rom: <span id="activeRoomLabel">Felles</span>
         </div>
       </div>
 
@@ -38,18 +37,18 @@
         <section class="chat__sidebar">
           <div class="panel">
             <label class="field">
-              <span class="field__label">Имя</span>
+              <span class="field__label">Navn</span>
               <input
                 id="usernameInput"
                 type="text"
                 maxlength="24"
-                placeholder="Например, Nova"
+                placeholder="F.eks. Nova"
               />
             </label>
             <div class="hint">
-              <p>• Сообщения хранятся в памяти сервера</p>
-              <p>• Открой чат в двух окнах и переключай комнаты</p>
-              <p>• Вкладки синхронизируются через Socket.IO</p>
+              <p>- Meldinger lagres i minnet på serveren</p>
+              <p>- Åpne to faner og bytt rom for å teste</p>
+              <p>- Synk i sanntid via Socket.IO</p>
             </div>
           </div>
         </section>
@@ -60,10 +59,10 @@
             <input
               id="messageInput"
               type="text"
-              placeholder="Написать сообщение..."
+              placeholder="Skriv en melding..."
             />
             <button type="submit" id="sendButton" disabled>
-              Отправить
+              Send
             </button>
           </form>
         </section>
