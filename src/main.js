@@ -29,7 +29,9 @@ const statusText = statusElement.querySelector('.status__text')
 const activeRoomLabel = document.getElementById('activeRoomLabel')
 const roomSwitcher = document.getElementById('roomSwitcher')
 
-usernameInput.value = username
+usernameInput.value = ''
+
+const hasUsername = () => usernameInput.value.trim().length > 0
 
 function ensureRoom(room) {
   if (!roomMessages.has(room)) {
@@ -82,7 +84,7 @@ function updateStatus(status, text) {
   statusElement.classList.remove('status--connected', 'status--disconnected', 'status--error', 'status--connecting')
   statusElement.classList.add(`status--${status}`)
   statusText.textContent = text
-  sendButton.disabled = status !== 'connected'
+  sendButton.disabled = status !== 'connected' || !hasUsername()
 }
 
 function joinRoom(room) {
@@ -111,11 +113,17 @@ function sendMessage(event) {
   event.preventDefault()
 
   const text = messageInput.value.trim()
+  const userValue = usernameInput.value.trim()
 
-  if (!text || !socket?.connected) return
+  if (!text || !socket?.connected || !userValue) {
+    if (!userValue) {
+      usernameInput.focus()
+    }
+    return
+  }
 
   socket.emit('chat:message', {
-    user: usernameInput.value.trim() || 'Gjest',
+    user: userValue,
     text,
     room: currentRoom,
   })
@@ -165,6 +173,11 @@ function escapeHtml(text) {
 
 usernameInput.addEventListener('change', (event) => {
   username = event.target.value || username
+  updateStatus(socket?.connected ? 'connected' : 'connecting', statusText.textContent)
+})
+
+usernameInput.addEventListener('input', () => {
+  updateStatus(socket?.connected ? 'connected' : 'connecting', statusText.textContent)
 })
 
 messageForm.addEventListener('submit', sendMessage)

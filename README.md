@@ -1,49 +1,53 @@
-# To chater med Socket.IO, Vite og Sass
+# chatter med Socket.IO, Vite og Sass
 
-To rom i ett vindu: «general» (Oby) og «team». Klienten er skrevet i ren JavaScript uten React, stylet med Sass, og kjører på Vite. Socket.IO-serveren holder egen historikk per rom.
+To rom i ett vindu: «Felles» og «Team». Klienten er ren JavaScript (Vite) med Sass-stiler, serveren på Socket.IO med egen historikk per rom.
 
 ## Hva er bygget
-- To chat-rom med bryter i UI og visning av aktivt rom.
-- Historikk per rom (inntil 50 meldinger) lagres i minne på serveren.
+- To chat-rom og bryter mellom dem, aktivt rom vises i UI.
+- Historikk per rom (inntil 50 meldinger) i minnet på serveren.
 - Status for tilkobling (connecting/online/error) styrer send-knapp.
-- Sass-baserte stiler med gradientbakgrunn og kortlayout.
-- ESLint er satt opp for både klient og server.
+- Sass-layout med gradientbakgrunn; ESLint for klient og server.
 
-## Kom i gang
+## Lokal kjøring (npm)
 ```bash
 npm install
-npm run dev
+npm run dev        # Vite 5173 + server 3001
+# eller
+npm run dev:client # bare klient
+npm run dev:server # bare server
+npm run lint       # ESLint
+npm run build      # prod-build av klient
+npm start          # bare server (bruker dist fra build)
 ```
-- Åpne `http://localhost:5173`.
-- Bytt mellom «general» og «team», skriv meldinger og åpne en ekstra fane/nettleser for å se synkronisering.
+Åpne `http://localhost:5173`, bytt mellom «Felles»/«Team» og test i flere faner.
 
-## Nyttekommandoer
-- `npm run dev` / `npm run dev:all` – starter klient (5173) og server (3001).
-- `npm run dev:client` – kun Vite-klienten.
-- `npm run dev:server` – kun Socket.IO-serveren.
-- `npm run lint` – ESLint på hele prosjektet.
-- `npm run build` – prod-bygg av klienten.
-- `npm start` – kun server (nyttig etter bygg).
+## Docker / Compose
+- Bygg og start:
+  ```bash
+  docker compose up -d --build
+  ```
+- Miljø:
+  - `CLIENT_ORIGIN` — CORS origin(er), kommaseparert. Eksempel: `http://prooveeksamen`.
+  - `PORT` — port for Socket.IO-server (default 3001).
+  - `VITE_SOCKET_URL` (valgfritt) — overstyrer Socket.IO-URL i klienten. Uten denne bruker klienten `window.location.origin`.
+- Nginx-proxy (NPM): domenet peker til port 80, кастомный location `/socket.io/` проксирует на port 3001, WebSockets på.
 
 ## CI (GitHub Actions)
-- Workflow: `.github/workflows/ci.yml`.
-- Запускается на push/PR в `main`, выполняет `npm ci`, `npm run lint`, `npm run build`, а также пробное `docker build` для таргетов `server` и `nginx`.
-
-## Miljøvariabler
-- `VITE_SOCKET_URL` – URL til Socket.IO for klienten (default `http://localhost:3001`).
-- `PORT` – port for serveren (default `3001`).
-- `CLIENT_ORIGIN` – CORS-origin som tillates (default `http://localhost:5173`).
+- `.github/workflows/ci.yml` kjører på push/PR til `main`: `npm ci`, `npm run lint`, `npm run build`, og тестовые `docker build` для target `server` og `nginx`.
 
 ## Struktur
 ```
-server/index.js        # Socket.IO-server, rom og historikk
+server/index.js        # Socket.IO-server, rom, historikk
 src/main.js            # Vanilla-klient med rombytte og statusvisning
 src/styles/index.scss  # Basisstiler, variabler, bakgrunn
-src/styles/App.scss    # Layout, rombryter, chat-stiler
+src/styles/App.scss    # Layout, bryter, chat
 index.html             # Enkel HTML uten React
+Dockerfile             # multi-stage build (server/nginx)
+docker-compose.yml     # app (port 3001) + nginx (port 80)
+docker/nginx.conf      # proxy for statikk + /socket.io/
 ```
 
 ## Slik virker det
-- Klienten kobler til Socket.IO og blir med i rommet `general` som start, og kan bytte til `team`.
-- Serveren lagrer meldinger per rom (maks 50) og sender dem kun til brukere i det samme rommet.
-- UI oppdaterer status for tilkobling; send-knappen er deaktivert når forbindelsen ikke er online.
+- Klienten kobler til Socket.IO og starter i rommet `general` («Felles»), kan bytte til `team`.
+- Serveren sender historikk og nye meldinger только i valgt rom; max 50 meldinger lagres per rom.
+- UI viser status; send-knappen deaktiveres hvis ikke online.
