@@ -85,6 +85,7 @@ function updateStatus(status, text) {
   statusElement.classList.add(`status--${status}`)
   statusText.textContent = text
   sendButton.disabled = status !== 'connected' || !hasUsername()
+  messageInput.placeholder = hasUsername() ? 'Skriv en melding...' : 'Skriv navnet ditt først'
 }
 
 function joinRoom(room) {
