@@ -2,7 +2,12 @@ import './styles/index.scss'
 import './styles/App.scss'
 import { io } from 'socket.io-client'
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? 'http://localhost:3001'
+const fallbackSocketUrl =
+  (typeof window !== 'undefined'
+    ? `${window.location.protocol}//${window.location.hostname}:3001`
+    : 'http://localhost:3001')
+
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? fallbackSocketUrl
 
 const ROOM_LABELS = {
   general: 'Felles',

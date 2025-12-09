@@ -4,6 +4,7 @@ import { Server } from 'socket.io'
 
 const PORT = process.env.PORT || 3001
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173'
+const CLIENT_ORIGINS = CLIENT_ORIGIN.split(',').map((origin) => origin.trim())
 const MAX_HISTORY = 50
 const DEFAULT_ROOM = 'general'
 
@@ -11,7 +12,7 @@ const httpServer = createServer()
 
 const io = new Server(httpServer, {
   cors: {
-    origin: CLIENT_ORIGIN,
+    origin: CLIENT_ORIGINS,
     methods: ['GET', 'POST'],
   },
 })
