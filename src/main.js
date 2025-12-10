@@ -1,165 +1,72 @@
-import './styles/index.scss'
-import './styles/App.scss'
-import { io } from 'socket.io-client'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
+import { randomUUID } from 'crypto'
 
-const fallbackSocketUrl =
-  typeof window !== 'undefined'
-    ? `${window.location.origin}`
-    : 'http://localhost:3001'
+// На каком порту запустить сервер (можно задать через переменную окружения)
+const PORT = process.env.PORT ?? 3001
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? fallbackSocketUrl
+// Какому фронтенду (сайту) разрешаем подключаться
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? 'http://localhost:5173'
 
-let username = `Gjest-${Math.floor(Math.random() * 900 + 100)}`
-let socket = null
-let currentStatus = 'connecting'
-let messages = []
+// Сколько последних сообщений хранить в истории
+const MAX_HISTORY = 50
 
-const usernameInput = document.getElementById('usernameInput')
-const messageInput = document.getElementById('messageInput')
-const messageForm = document.getElementById('messageForm')
-const sendButton = document.getElementById('sendButton')
-const messagesContainer = document.getElementById('messagesContainer')
-const statusElement = document.getElementById('status')
-const statusText = statusElement.querySelector('.status__text')
-const usernameField = usernameInput.closest('.field')
+// Массив для хранения сообщений
+const history = []
 
-usernameInput.value = ''
+// Создаём обычный HTTP-сервер
+const httpServer = createServer()
 
-const hasUsername = () => usernameInput.value.trim().length > 0
+// Создаём Socket.io-сервер и "вешаем" его на HTTP-сервер
+const io = new Server(httpServer, {
+  cors: {
+    origin: CLIENT_ORIGIN,
+  },
+})
 
-const refreshUiState = () => {
-  const validName = hasUsername()
-  const isConnected = currentStatus === 'connected'
+// Когда новый клиент подключился
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id)
 
-  sendButton.disabled = !isConnected || !validName
-  messageInput.placeholder = validName
-    ? 'Skriv en melding...'
-    : 'Skriv navnet ditt først'
+  // Отправляем ему историю сообщений
+  socket.emit('chat:history', history)
 
-  if (usernameField) {
-    usernameField.classList.toggle('field--error', !validName)
-  }
-}
+  // Когда клиент прислал сообщение
+  socket.on('chat:message', (payload) => {
+    const user = String(payload?.user || 'Guest').slice(0, 24)
+    const text = String(payload?.text || '').trim()
 
-function initSocket() {
-  socket = io(SOCKET_URL, {
-    autoConnect: false,
-  })
+    // Пустые сообщения игнорируем
+    if (!text) return
 
-  socket.on('connect', () => {
-    updateStatus('connected', 'tilkoblet')
-  })
-
-  socket.on('disconnect', () => {
-    updateStatus('disconnected', 'frakoblet')
-  })
-
-  socket.on('connect_error', () => {
-    updateStatus('error', 'feil')
-  })
-
-  socket.on('chat:history', ({ history = [] } = {}) => {
-    messages = history
-    renderMessages()
-  })
-
-  socket.on('chat:message', (incoming) => {
-    messages.push(incoming)
-    renderMessages()
-  })
-
-  updateStatus('connecting', 'kobler til...')
-  socket.connect()
-}
-
-function updateStatus(status, text) {
-  currentStatus = status
-  statusElement.classList.remove(
-    'status--connected',
-    'status--disconnected',
-    'status--error',
-    'status--connecting',
-  )
-  statusElement.classList.add(`status--${status}`)
-  statusText.textContent = text
-  refreshUiState()
-}
-
-function sendMessage(event) {
-  event.preventDefault()
-
-  const text = messageInput.value.trim()
-  const userValue = usernameInput.value.trim()
-
-  if (!text || !socket?.connected || !userValue) {
-    if (!userValue) {
-      usernameInput.focus()
+    // Собираем объект сообщения
+    const message = {
+      id: randomUUID(),
+      user,
+      text,
+      timestamp: Date.now(),
     }
-    return
-  }
 
-  socket.emit('chat:message', {
-    user: userValue,
-    text,
+    // Кладём в историю
+    history.push(message)
+
+    // Если сообщений больше, чем MAX_HISTORY — обрезаем старые
+    if (history.length > MAX_HISTORY) {
+      history.splice(0, history.length - MAX_HISTORY)
+    }
+
+    // Отправляем это сообщение всем подключённым клиентам
+    io.emit('chat:message', message)
   })
 
-  messageInput.value = ''
-  messageInput.focus()
-}
-
-function renderMessages() {
-  messagesContainer.innerHTML = ''
-
-  messages.forEach((msg) => {
-    const messageEl = document.createElement('article')
-    messageEl.className = 'message'
-
-    const time = formatTime(msg.timestamp)
-
-    messageEl.innerHTML = `
-      <header class="message__meta">
-        <span class="message__user">${escapeHtml(msg.user)}</span>
-        <span class="message__time">${time}</span>
-      </header>
-      <p class="message__text">${escapeHtml(msg.text)}</p>
-    `
-
-    messagesContainer.appendChild(messageEl)
+  // Когда клиент отключился
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id)
   })
-
-  messagesContainer.scrollTop = messagesContainer.scrollHeight
-}
-
-function formatTime(timestamp) {
-  if (!timestamp) return '--:--'
-
-  return new Date(timestamp).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div')
-  div.textContent = text
-  return div.innerHTML
-}
-
-usernameInput.addEventListener('change', (event) => {
-  username = event.target.value || username
-  updateStatus(
-    socket?.connected ? 'connected' : 'connecting',
-    statusText.textContent,
-  )
 })
 
-usernameInput.addEventListener('input', () => {
-  updateStatus(
-    socket?.connected ? 'connected' : 'connecting',
-    statusText.textContent,
-  )
+// Запускаем сервер
+httpServer.listen(PORT, () => {
+  console.log(`Socket server running on http://localhost:${PORT}`)
+  console.log(`Allowing client origin: ${CLIENT_ORIGIN}`)
 })
-
-messageForm.addEventListener('submit', sendMessage)
-
-initSocket()
