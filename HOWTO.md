@@ -415,13 +415,3 @@ jobs:
 3. Første gang etter login — regler-popup vises og kan lukkes (lagres i localStorage).
 4. Start via Docker: `docker compose up -d --build` — åpne `http://localhost`.
 
-## Hva jeg endret/tilbyr i HOWTO
-
-- Fullstendige kodeeksempler for klient og server (rom + validering).
-- SCSS-eksempler for synlige feilmeldinger og rom-switcher.
-- Dockerfile, docker-compose.yml og `nginx.conf` for produksjons-sannsynlig oppsett.
-- Eksempel CI workflow.
-
-Lykke til på eksamen — kopier inn kodeblokkene i repoet, kjør testene/bygget og verifiser funksjonaliteten lokalt. Om du vil kan jeg også legge ferdige filer (Dockerfile, docker/nginx.conf, og workflow) direkte inn i repoet.
-
-```
