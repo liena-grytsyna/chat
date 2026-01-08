@@ -8,8 +8,9 @@ services:
     environment:
       PORT: 3001
       CLIENT_ORIGIN: http://chat.it4.iktim.no
-    ports:
-      - "3001:3001"
+    restart: unless-stopped
+    networks:
+      - chat-network
 
   nginx:
     build:
@@ -19,3 +20,10 @@ services:
       - app
     ports:
       - "80:80"
+    restart: unless-stopped
+    networks:
+      - chat-network
+
+networks:
+  chat-network:
+    driver: bridge

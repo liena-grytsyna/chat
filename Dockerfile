@@ -21,6 +21,9 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
+# Build with empty SOCKET_URL to use relative path
+ENV VITE_SOCKET_URL=""
 RUN npm run build
 
 FROM base AS server
