@@ -1,24 +1,245 @@
-@media (max-width: 980px) {
-  .chat {
-    grid-template-columns: 1fr;
-  }
+@use './variables' as vars;
 
-  .app__header {
-    flex-direction: column;
+// Mobile-first approach: базовые стили для маленьких экранов
+
+// Базовые мобильные стили (< 480px)
+.app { 
+  padding: vars.$space-md vars.$space-xs vars.$space-lg; 
+}
+
+.app__header {
+  display: grid;
+  gap: vars.$space-md;
+  
+  h1 { font-size: 1.5rem; }
+  .status { 
+    justify-self: start;
+    font-size: vars.$fs-md;
+    padding: vars.$space-xs vars.$space-sm;
   }
 }
 
-@media (max-width: 640px) {
-  .app {
-    padding: 1.5rem 1rem 2rem;
-  }
+.lede { font-size: vars.$fs-md; }
 
-  .composer {
-    flex-direction: column;
-    align-items: stretch;
-  }
+.chat {
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "panel"
+    "sidebar";
+}
 
-  button {
+.chat__sidebar { grid-area: sidebar; }
+.chat__panel { 
+  grid-area: panel;
+  min-height: 350px;
+  padding: 0.85rem;
+  border-radius: vars.$radius-lg;
+}
+
+.messages {
+  min-height: 200px;
+  max-height: 250px;
+  padding: 0.65rem;
+  border-radius: vars.$radius-sm;
+}
+
+.message {
+  padding: 0.65rem vars.$space-sm;
+  border-radius: vars.$radius-sm;
+  
+  &__meta {
+    display: grid;
+    gap: 0.25rem;
+    font-size: vars.$fs-xs;
+  }
+  
+  &__text { font-size: vars.$fs-md; }
+}
+
+.switcher {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  margin-bottom: vars.$space-md;
+  
+  &__tab {
+    font-size: vars.$fs-sm;
+    padding: 0.65rem vars.$space-xs;
+    text-align: center;
+  }
+  
+  &__info { 
     width: 100%;
+    margin-top: vars.$space-xs;
+    font-size: vars.$fs-sm;
+  }
+}
+
+.composer {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.65rem;
+  
+  input {
+    padding: vars.$space-sm 0.65rem;
+    font-size: vars.$fs-base;
+  }
+}
+
+button {
+  width: 100%;
+  padding: 0.85rem vars.$space-md;
+}
+
+.panel {
+  border-radius: vars.$radius-lg;
+  padding: 0.85rem;
+}
+
+.chat-info {
+  &__list { padding-left: vars.$space-md; }
+  &__item { font-size: vars.$fs-md; }
+}
+
+.field__label { font-size: vars.$fs-md; }
+input[type="text"] { font-size: vars.$fs-base; }
+
+// Средние мобильные (≥ 480px)
+@media (min-width: vars.$bp-small) {
+  .app { 
+    padding: vars.$space-lg vars.$space-sm vars.$space-xl; 
+  }
+  
+  .app__header {
+    h1 { font-size: 1.75rem; }
+    .status {
+      font-size: 1rem;
+      padding: 0.6rem 0.9rem;
+    }
+  }
+  
+  .lede { font-size: vars.$fs-base; }
+
+  .chat__panel {
+    min-height: 400px;
+    padding: vars.$space-md;
+  }
+  
+  .messages {
+    min-height: 250px;
+    max-height: 300px;
+    padding: vars.$space-sm;
+  }
+  
+  .message {
+    padding: vars.$space-sm vars.$space-sm + 0.1rem;
+    
+    &__meta { 
+      display: flex;
+      justify-content: space-between;
+      font-size: vars.$fs-sm; 
+    }
+    
+    &__text { font-size: vars.$fs-base; }
+  }
+  
+  .switcher {
+    display: flex;
+    flex-wrap: wrap;
+    gap: vars.$space-xs;
+    
+    &__tab {
+      font-size: vars.$fs-md;
+      padding: vars.$space-sm vars.$space-md;
+    }
+  }
+  
+  .composer {
+    padding: vars.$space-sm;
+    gap: 0.65rem;
+    
+    input { padding: 0.85rem vars.$space-sm; }
+  }
+  
+  .panel { padding: vars.$space-md; }
+}
+
+// Планшеты (≥ 640px)
+@media (min-width: vars.$bp-mobile) {
+  .app { 
+    padding: 1.5rem 1rem 2rem; 
+  }
+  
+  .composer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    
+    input { 
+      flex: 1;
+      padding: 0.9rem 1rem;
+    }
+  }
+  
+  button {
+    width: auto;
+    padding: 0.9rem 1.2rem;
+  }
+  
+  .switcher {
+    gap: vars.$space-md;
+    
+    &__info {
+      width: auto;
+      margin-left: auto;
+      margin-top: 0;
+    }
+  }
+  
+  .panel { 
+    padding: vars.$space-lg;
+    border-radius: vars.$radius-xl;
+  }
+  
+  .chat__panel {
+    padding: 1rem;
+    border-radius: vars.$radius-2xl;
+  }
+}
+
+// Десктоп (≥ 980px)
+@media (min-width: vars.$bp-tablet) {
+  .app { 
+    padding: 2.5rem clamp(1rem, 2vw, 2rem) 3rem;
+  }
+  
+  .app__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    
+    h1 { font-size: clamp(2rem, 3vw, 2.6rem); }
+    .status { justify-self: auto; }
+  }
+  
+  .chat {
+    grid-template-columns: 280px 1fr;
+    grid-template-areas: none;
+  }
+  
+  .chat__sidebar { grid-area: auto; }
+  .chat__panel { 
+    grid-area: auto;
+    min-height: 520px;
+  }
+  
+  .messages { 
+    max-height: 420px;
+    min-height: 320px;
+  }
+  
+  .switcher {
+    flex-wrap: nowrap;
   }
 }

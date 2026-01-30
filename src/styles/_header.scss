@@ -5,50 +5,79 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-}
-
-.app__header h1 {
-  margin: 0.3rem 0 0.2rem;
-  font-size: clamp(2rem, 3vw, 2.6rem);
-  letter-spacing: -0.01em;
+  
+  h1 {
+    margin: 0.3rem 0 0.2rem;
+    font-size: clamp(2rem, 3vw, 2.6rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: vars.$color-text-secondary;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
 
 .lede {
   margin: 0.2rem 0 0;
   color: var(--text-secondary);
   max-width: 650px;
+  font-size: 0.95rem;
 }
 
 .status {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.6rem 0.9rem;
-  border-radius: 12px;
-  background: vars.$glass-04;
-  border: 1px solid var(--border);
+  padding: 0.65rem 1rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   text-transform: capitalize;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 0.9rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  
+  &__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s;
+  }
+  
+  &--connected {
+    .status__dot {
+      background: var(--accent-2);
+      box-shadow: 0 0 0 4px rgba(129, 199, 132, 0.2);
+      animation: pulse 2s ease infinite;
+    }
+  }
+  
+  &--connecting {
+    .status__dot {
+      background: var(--accent);
+      animation: pulse 1.5s ease infinite;
+    }
+  }
+  
+  &--error {
+    .status__dot {
+      background: vars.$color-error;
+      box-shadow: 0 0 0 4px rgba(239, 83, 80, 0.2);
+    }
+  }
 }
 
-.status__dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--text-secondary);
-  box-shadow: 0 0 0 6px vars.$glass-04;
-}
-
-.status--connected .status__dot {
-  background: var(--accent-2);
-  box-shadow: 0 0 0 6px rgba(25, 185, 149, 0.25);
-}
-
-.status--connecting .status__dot {
-  background: var(--accent);
-}
-
-.status--error .status__dot {
-  background: vars.$color-error;
-  box-shadow: 0 0 0 6px rgba(255, 79, 97, 0.2);
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.8;
+  }
 }

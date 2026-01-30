@@ -1,5 +1,5 @@
 @use './variables' as vars;
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
   --bg: #{vars.$color-bg};
@@ -13,21 +13,16 @@
   --shadow: #{vars.$shadow-strong};
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #{vars.$color-bg}, #{vars.$color-panel});
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ff8a65 100%);
+  background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.6;
-}
-
-#root {
-  min-height: 100vh;
 }
 
 a {
@@ -36,75 +31,70 @@ a {
 }
 
 button,
-input {
-  font-family: inherit;
-}
+input { font-family: inherit; }
 
 input {
-  background: vars.$glass-04;
+  background: rgba(255, 255, 255, 0.6);
   border: 1px solid var(--border);
   color: var(--text-primary);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 0.9rem 1rem;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
-}
-
-input:focus {
-  outline: none;
-  border-color: var(--accent-2);
-  box-shadow: vars.$shadow-input-focus;
-  background: vars.$glass-04;
+  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+  
+  &::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: var(--accent-2);
+    box-shadow: vars.$shadow-input-focus;
+    background: rgba(255, 255, 255, 0.8);
+  }
 }
 
 button {
   cursor: pointer;
   border: none;
-  border-radius: 14px;
+  border-radius: 16px;
   background: vars.$btn-gradient;
   color: vars.$color-btn-text;
-  padding: 0.9rem 1.2rem;
-  font-weight: 700;
+  padding: 0.9rem 1.4rem;
+  font-weight: 600;
   letter-spacing: 0.01em;
-  transition:
-    transform 0.1s ease,
-    box-shadow 0.2s ease,
-    filter 0.2s ease;
+  transition: all 0.2s;
   box-shadow: vars.$shadow-button;
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  &:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(255, 138, 101, 0.4);
+  }
+  
+  &:not(:disabled):active {
+    transform: translateY(0);
+  }
 }
 
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-  transform: none;
-  box-shadow: none;
-}
+::selection { background: vars.$selection-bg; }
 
-button:not(:disabled):hover {
-  transform: translateY(-1px);
-  filter: brightness(1.03);
-}
-
-button:not(:disabled):active {
-  transform: translateY(0);
-  filter: brightness(0.98);
-}
-
-::selection {
-  background: vars.$selection-bg;
-}
-
-::-webkit-scrollbar {
-  width: 10px;
-}
+::-webkit-scrollbar { width: 8px; }
 
 ::-webkit-scrollbar-thumb {
   background: vars.$scrollbar-thumb;
   border-radius: 8px;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.25);
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+::-webkit-scrollbar-track { background: transparent; }
