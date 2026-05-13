@@ -69,6 +69,7 @@
   }
   
   &__info { 
+    grid-column: 1 / -1;
     width: 100%;
     margin-top: vars.$space-xs;
     font-size: vars.$fs-sm;
@@ -191,6 +192,7 @@ input[type="text"] { font-size: vars.$fs-base; }
     gap: vars.$space-md;
     
     &__info {
+      grid-column: auto;
       width: auto;
       margin-left: auto;
       margin-top: 0;

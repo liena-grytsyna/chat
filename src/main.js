@@ -1,162 +1,170 @@
-import { io } from 'socket.io-client' // подключаем клиент Socket.IO
-import './styles/index.scss' // подключаем стили приложения
+import { io } from 'socket.io-client'
+import './styles/index.scss'
 
-const $ = (id) => document.getElementById(id) // короткая функция для поиска элемента по id
-const statusEl = $('status') // блок со статусом подключения
-const statusText = statusEl?.querySelector('.status__text') // текстовая часть статуса
-const form = $('messageForm') // форма отправки сообщения
-const messageInput = $('messageInput') // поле ввода сообщения
+const $ = (id) => document.getElementById(id)
+const statusEl = $('status')
+const statusText = statusEl?.querySelector('.status__text')
+const form = $('messageForm')
+const messageInput = $('messageInput')
 const sendButton = $('sendButton')
-const usernameInput = $('usernameInput') 
+const usernameInput = $('usernameInput')
 const messages = $('messagesContainer')
+const roomSwitcher = $('roomSwitcher')
+const activeRoomLabel = $('activeRoomLabel')
 
-const MAX_LENGTH_MESSAGE = 200
-
-// Room state: labels, current room and per-room histories
-const ROOM_LABELS = { general: 'Generell', team: 'Team', random: 'Random' }
-let currentRoom = 'general'
-const roomHistories = new Map()
-
-const ensure = (r) => { if (!roomHistories.has(r)) roomHistories.set(r, []); return roomHistories.get(r) }
-const activeRoomLabel = document.getElementById('activeRoomLabel')
-
-// Set active room and render its history
-function setRoom(r) {
-  if (!r || r === currentRoom) return
-  currentRoom = r
-  document.querySelectorAll('.switcher__tab').forEach(t => t.classList.toggle('is-active', t.dataset.room === r))
-  if (activeRoomLabel) activeRoomLabel.textContent = ROOM_LABELS[r] || r
-  renderHistory()
-  socket.emit('chat:join', { room: r })
-}
-
-function renderHistory() {
-  const list = ensure(currentRoom)
-  showHistory(list)
-}
-
-// Room switcher click handler (delegation)
-document.getElementById('roomSwitcher')?.addEventListener('click', (ev) => {
-  const btn = ev.target.closest('.switcher__tab')
-  if (!btn) return
-  setRoom(btn.dataset.room)
-})
-
-// В продакшене используем относительный путь (nginx проксирует),
-// в dev режиме - явный URL
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 
+const DEFAULT_ROOM = 'general'
+const MAX_MESSAGE_LENGTH = 200
+const ROOM_LABELS = { general: 'Felles', team: 'Team', random: 'Random' }
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ||
   (import.meta.env.DEV ? 'http://localhost:3001' : window.location.origin)
 
-let connected = false // флаг, подключён ли клиент сейчас
+let connected = false
+let currentRoom = DEFAULT_ROOM
+const roomHistories = new Map()
 
-const setStatus = (state, text) => { // обновляем визуальный статус
-  if (!statusEl || !statusText) return // если элементов нет — выходим
-  statusEl.className = `status status--${state}` // ставим класс по состоянию
-  statusText.textContent = text // обновляем текст статуса
+const socket = io(SOCKET_URL)
+
+const getRoomHistory = (room) => {
+  if (!roomHistories.has(room)) {
+    roomHistories.set(room, [])
+  }
+  return roomHistories.get(room)
 }
 
-const toggleSendButton = () => { // включаем/выключаем кнопку
-  if (!sendButton || !messageInput) return // если элементов нет — выходим
-  sendButton.disabled = !connected || !messageInput.value.trim() // выключаем, если нет связи или текста
+const setStatus = (state, text) => {
+  if (!statusEl || !statusText) return
+
+  statusEl.className = `status status--${state}`
+  statusText.textContent = text
 }
 
+const updateMessageState = () => {
+  if (!sendButton || !messageInput) return
+
+  const message = messageInput.value.trim()
+  const isTooLong = message.length > MAX_MESSAGE_LENGTH
+
+  messageInput.classList.toggle('error', isTooLong)
+  sendButton.disabled = !connected || !message || isTooLong
+}
+
+const formatTime = (timestamp) => new Date(timestamp || Date.now()).toLocaleTimeString('no-NO', {
+  hour: '2-digit',
+  minute: '2-digit',
+})
 
 const addMessage = ({ user, text, timestamp }) => {
-  if (!messages) return;
-  const item = document.createElement('article');
-  item.className = 'message';
-  // шаблон без лишнего текста перед разметкой
-  item.innerHTML = `
-    <div class="message__meta">
-      <span class="message__user">${user || 'Guest'}</span>
-      <time>${new Date(timestamp || Date.now()).toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' })}</time>
-    </div>
-    <p class="message__text"></p>
-  `;
-  item.querySelector('.message__text').textContent = text || '';
-  messages.appendChild(item);
-  messages.scrollTop = messages.scrollHeight;
+  if (!messages) return
+
+  const item = document.createElement('article')
+  const meta = document.createElement('div')
+  const userEl = document.createElement('span')
+  const timeEl = document.createElement('time')
+  const textEl = document.createElement('p')
+
+  item.className = 'message'
+  meta.className = 'message__meta'
+  userEl.className = 'message__user'
+  textEl.className = 'message__text'
+
+  userEl.textContent = user || 'Guest'
+  timeEl.dateTime = new Date(timestamp || Date.now()).toISOString()
+  timeEl.textContent = formatTime(timestamp)
+  textEl.textContent = text || ''
+
+  meta.append(userEl, timeEl)
+  item.append(meta, textEl)
+  messages.appendChild(item)
+  messages.scrollTop = messages.scrollHeight
 }
 
-const showHistory = (list) => { // полностью перерисовываем историю
-  if (!messages) return // если контейнера нет — выходим
-  messages.innerHTML = '' // очищаем старый список
-  list.forEach(addMessage) // добавляем каждое сообщение
+const renderHistory = () => {
+  if (!messages) return
+
+  messages.innerHTML = ''
+  getRoomHistory(currentRoom).forEach(addMessage)
 }
 
-const socket = io(SOCKET_URL) // создаём подключение к сокету
+const setRoom = (room) => {
+  if (!ROOM_LABELS[room] || room === currentRoom) return
 
-setStatus('connecting', 'kobler til...') // показываем, что идёт подключение
-toggleSendButton() // обновляем состояние кнопки
+  currentRoom = room
 
-socket.on('connect', () => { // когда подключились
-  connected = true // ставим флаг подключения
-  setStatus('connected', 'tilkoblet') // обновляем статус
-  toggleSendButton() // включаем кнопку, если есть текст
-})
-
-socket.on('disconnect', () => { // когда отключились
-  connected = false // снимаем флаг подключения
-  setStatus('error', 'frakoblet') // показываем статус ошибки
-  toggleSendButton() // блокируем кнопку
-})
-
-socket.on('connect_error', () => { // если не удалось подключиться
-  connected = false // снимаем флаг
-  setStatus('error', 'feil ved tilkobling') // пишем об ошибке
-  toggleSendButton() // блокируем кнопку
-})
-
-socket.on('reconnect_attempt', () => { // при попытке переподключения
-  setStatus('connecting', 'kobler til på nytt...') // показываем сообщение
-})
-
-// Сервер присылает историю за конкретную комнату
-socket.on('chat:history', (payload = {}) => {
-  const r = payload.room || 'general'
-  const list = Array.isArray(payload.history) ? payload.history : (Array.isArray(payload) ? payload : [])
-  roomHistories.set(r, list)
-  if (r === currentRoom) renderHistory()
-})
-
-// Новое сообщение от сервера — сохраняем и рендерим если нужно
-socket.on('chat:message', (msg = {}) => {
-  const r = msg.room || 'general'
-  ensure(r).push(msg)
-  if (r === currentRoom) addMessage(msg)
-})
-
-messageInput?.addEventListener('input', toggleSendButton) // при вводе текста обновляем кнопку
-
-messageInput?.addEventListener('input', (e) => {
-  const charCount = e.target.value.length
-
-  if (charCount > MAX_LENGTH_MESSAGE) {
-    messageInput.classList.add('error')
-  } else {
-    messageInput.classList.remove('error')
-  }
-})
-
-form?.addEventListener('submit', (event) => { // обработка отправки формы
-  event.preventDefault() // блокируем перезагрузку страницы
-  if (!connected || !messageInput) return // если нет связи или поля — выходим
-
-  let text = messageInput.value.trim() // берём текст и обрезаем пробелы
-  if (!text) return // пустые строки не отправляем
-
-  // Ограничиваем длину сообщения
-  if (text.length > MAX_LENGTH_MESSAGE) {
-    text = text.substring(0, MAX_LENGTH_MESSAGE)
-  }
-
-  socket.emit('chat:message', { // отправляем событие на сервер
-    user: usernameInput?.value.trim() || 'Guest', // имя или Guest
-    text, // сам текст
-    room: currentRoom, // отправляем в выбранный чат-ром
+  roomSwitcher?.querySelectorAll('.switcher__tab').forEach((tab) => {
+    const isActive = tab.dataset.room === room
+    tab.classList.toggle('is-active', isActive)
+    tab.setAttribute('aria-selected', String(isActive))
   })
 
-  messageInput.value = '' // очищаем поле
-  toggleSendButton() // обновляем кнопку
-  messageInput.focus() // возвращаем фокус в поле
+  if (activeRoomLabel) {
+    activeRoomLabel.textContent = ROOM_LABELS[room]
+  }
+
+  renderHistory()
+  socket.emit('chat:join', { room })
+}
+
+setStatus('connecting', 'kobler til...')
+updateMessageState()
+
+roomSwitcher?.addEventListener('click', (event) => {
+  const tab = event.target.closest('.switcher__tab')
+  if (tab) setRoom(tab.dataset.room)
+})
+
+socket.on('connect', () => {
+  connected = true
+  setStatus('connected', 'tilkoblet')
+  updateMessageState()
+})
+
+socket.on('disconnect', () => {
+  connected = false
+  setStatus('error', 'frakoblet')
+  updateMessageState()
+})
+
+socket.on('connect_error', () => {
+  connected = false
+  setStatus('error', 'feil ved tilkobling')
+  updateMessageState()
+})
+
+socket.on('reconnect_attempt', () => {
+  setStatus('connecting', 'kobler til på nytt...')
+})
+
+socket.on('chat:history', (payload = {}) => {
+  const room = payload.room || DEFAULT_ROOM
+  const history = Array.isArray(payload.history) ? payload.history : []
+
+  roomHistories.set(room, history)
+  if (room === currentRoom) renderHistory()
+})
+
+socket.on('chat:message', (message = {}) => {
+  const room = message.room || DEFAULT_ROOM
+
+  getRoomHistory(room).push(message)
+  if (room === currentRoom) addMessage(message)
+})
+
+messageInput?.addEventListener('input', updateMessageState)
+
+form?.addEventListener('submit', (event) => {
+  event.preventDefault()
+  if (!connected || !messageInput) return
+
+  const text = messageInput.value.trim()
+  if (!text || text.length > MAX_MESSAGE_LENGTH) return
+
+  socket.emit('chat:message', {
+    user: usernameInput?.value.trim() || 'Guest',
+    text,
+    room: currentRoom,
+  })
+
+  messageInput.value = ''
+  updateMessageState()
+  messageInput.focus()
 })

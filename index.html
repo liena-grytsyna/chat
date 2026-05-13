@@ -10,12 +10,10 @@
       <header class="app__header">
         <div>
           <h1>chatter</h1>
-          <p class="lede">
-            hi hi
-          </p>
+          <p class="lede">Sanntidschat for korte meldinger og raske avklaringer.</p>
         </div>
-        <div class="status status--connecting" id="status">
-          <span class="status__dot"></span>
+        <div class="status status--connecting" id="status" aria-live="polite">
+          <span class="status__dot" aria-hidden="true"></span>
           <span class="status__text">kobler til...</span>
         </div>
       </header>
@@ -30,6 +28,7 @@
                 type="text"
                 maxlength="24"
                 placeholder="F.eks. Nova"
+                autocomplete="name"
               />
             </label>
             <div class="chat-info">
@@ -38,7 +37,7 @@
               </p>
               <ul class="chat-info__list">
                 <li class="chat-info__item">Vær respektfull mot andre brukere</li>
-                <li class="chat-info__item">Ikke del personlig informasjon </li>
+                <li class="chat-info__item">Ikke del personlig informasjon</li>
                 <li class="chat-info__item">Maks 200 tegn per melding</li>
               </ul>
             </div>
@@ -46,11 +45,11 @@
         </section>
 
         <section class="chat__panel">
-          <div class="switcher" id="roomSwitcher" role="tablist" aria-label="Rom">
+          <div class="switcher" id="roomSwitcher" role="tablist" aria-label="Chatrom">
             <button class="switcher__tab is-active" data-room="general" role="tab" aria-selected="true">Felles</button>
             <button class="switcher__tab" data-room="team" role="tab" aria-selected="false">Team</button>
             <button class="switcher__tab" data-room="random" role="tab" aria-selected="false">Random</button>
-            <div class="switcher__info">Aktivt rom: <span id="activeRoomLabel"> Felles</span></div>
+            <div class="switcher__info">Aktivt rom: <span id="activeRoomLabel">Felles</span></div>
           </div>
           <div class="messages" id="messagesContainer" aria-live="polite"></div>
           <form class="composer" id="messageForm">
@@ -58,6 +57,8 @@
               id="messageInput"
               type="text"
               placeholder="Skriv en melding..."
+              maxlength="200"
+              aria-label="Melding"
             />
             <button type="submit" id="sendButton" disabled>
               Send

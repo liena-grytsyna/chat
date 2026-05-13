@@ -2,11 +2,9 @@ import js from '@eslint/js'
 import globals from 'globals'
 
 export default [
-  // Игнорируем эти директории
   {
-    ignores: ['dist/', 'node_modules/', 'server/'],
+    ignores: ['dist/', 'node_modules/'],
   },
-  // Основные правила для JS файлов
   {
     files: ['src/**/*.js'],
     languageOptions: {
@@ -20,7 +18,6 @@ export default [
       'no-console': 'warn',
     },
   },
-  // Правила для серверного кода
   {
     files: ['server/**/*.js'],
     languageOptions: {

@@ -4,9 +4,15 @@ import { Server } from 'socket.io'
 
 const PORT = process.env.PORT || 3001
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173'
-const CLIENT_ORIGINS = CLIENT_ORIGIN.split(',').map((origin) => origin.trim())
+const CLIENT_ORIGINS = CLIENT_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean)
+const DEFAULT_ROOM = 'general'
+const ALLOWED_ROOMS = new Set([DEFAULT_ROOM, 'team', 'random'])
 const MAX_HISTORY = 50
+const MAX_MESSAGE_LENGTH = 200
+const MAX_USERNAME_LENGTH = 24
 const roomHistories = new Map()
+
+const getRoom = (room) => ALLOWED_ROOMS.has(room) ? room : DEFAULT_ROOM
 
 const getRoomHistory = (room) => {
   if (!roomHistories.has(room)) {
@@ -27,31 +33,28 @@ const io = new Server(httpServer, {
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`)
 
-  // Присоединяем к комнате по умолчанию
-  socket.join('general')
-  socket.emit('chat:history', { room: 'general', history: getRoomHistory('general') })
+  socket.join(DEFAULT_ROOM)
+  socket.emit('chat:history', {
+    room: DEFAULT_ROOM,
+    history: getRoomHistory(DEFAULT_ROOM),
+  })
 
-  // Обработка смены комнаты
   socket.on('chat:join', (payload) => {
-    const room = payload?.room || 'general'
-    
-    // Покидаем все текущие комнаты
-    socket.rooms.forEach((r) => {
-      if (r !== socket.id) socket.leave(r)
+    const room = getRoom(payload?.room)
+
+    socket.rooms.forEach((joinedRoom) => {
+      if (joinedRoom !== socket.id) socket.leave(joinedRoom)
     })
-    
-    // Присоединяемся к новой комнате
+
     socket.join(room)
     console.log(`Client ${socket.id} joined room: ${room}`)
-    
-    // Отправляем историю этой комнаты
     socket.emit('chat:history', { room, history: getRoomHistory(room) })
   })
 
   socket.on('chat:message', (payload) => {
-    const user = (payload?.user ?? 'Guest').toString().slice(0, 24)
-    const text = (payload?.text ?? '').toString().trim()
-    const room = payload?.room || 'general'
+    const user = (payload?.user ?? 'Guest').toString().trim().slice(0, MAX_USERNAME_LENGTH)
+    const text = (payload?.text ?? '').toString().trim().slice(0, MAX_MESSAGE_LENGTH)
+    const room = getRoom(payload?.room)
 
     if (!text) return
 
