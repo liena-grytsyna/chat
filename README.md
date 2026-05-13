@@ -1,70 +1,131 @@
-# Chatter (Brukerstotte)
+# Chatter
 
-Dette dokumentet er laget for brukerstotte og beskriver hvordan chatten brukes,
-hva som er vanlig feilsoking, og hvilke driftsgrep som trengs ved feil.
+Chatter is a real-time chat application built with a Vite frontend and a Socket.IO server. Users can choose a chat room, enter a display name, and send short messages in real time.
 
-## Kort om prosjektet
-- Sanntids chat med rom: general, team, random
-- Socket.IO server + Vite klient
-- Meldingsgrense: 200 tegn
-- Historikk: siste 50 meldinger per rom
+## Live Preview
 
-## Slik bruker du chatten
-1) Aapne nettsiden i nettleser.
-2) Skriv inn navn i feltet "Navn".
-3) Velg rom i toppen (Felles/Team/Random).
-4) Skriv melding og trykk "Send".
+[Live demo](https://chat.it4.iktim.no/)
 
-Statusindikator oppe til hoyre:
-- "kobler til..." = forsoker a koble seg pa
-- "tilkoblet" = alt ok
-- "frakoblet" eller "feil ved tilkobling" = sjekk nett / last inn pa nytt
+## Technologies Used
 
-## Brukerstotte: vanlige problemer
-- Kan ikke sende melding
-  - Sjekk at status viser "tilkoblet"
-  - Sjekk at meldingen er under 200 tegn
-  - Sjekk at du har skrevet navn
-- Ser ikke meldinger
-  - Sjekk at alle er i samme rom
-  - Oppdater siden (F5)
-- Ingen tilkobling
-  - Nettverk kan blokkere WebSocket
-  - Proev igjen senere eller fra annet nett
+- HTML
+- SCSS
+- JavaScript
+- Vite
+- Node.js
+- Socket.IO
+- ESLint
+- Docker
+- Nginx
 
-## Hva du kan be brukeren om
-- Skjermbilde av statusindikatoren
-- Tidspunkt for feilen
-- Hvilket rom de var i
-- Om de bruker mobil eller PC
+## Getting Started
 
-## Drift/administrator
-### Sjekk at tjenesten kjore
+Clone the repository:
+
 ```bash
-docker compose ps
+git clone https://github.com/liena-grytsyna/socket_chat.git
+cd socket_chat
 ```
 
-### Se logger
+Install dependencies:
+
 ```bash
-docker compose logs -f
+npm install
 ```
 
-### Restart
+Run the project locally:
+
 ```bash
-docker compose down
+npm run dev
+```
+
+The Vite client runs on:
+
+```bash
+http://localhost:5173
+```
+
+The Socket.IO server runs on:
+
+```bash
+http://localhost:3001
+```
+
+## Environment Variables
+
+Client:
+
+```bash
+VITE_SOCKET_URL=http://localhost:3001
+```
+
+Server:
+
+```bash
+PORT=3001
+CLIENT_ORIGIN=http://localhost:5173
+```
+
+For deployment, set `VITE_SOCKET_URL` to the public URL of the deployed Socket.IO server and set `CLIENT_ORIGIN` to the public frontend URL.
+
+## Available Scripts
+
+```bash
+npm run dev
+```
+
+Runs the frontend and backend together in development mode.
+
+```bash
+npm run build
+```
+
+Builds the frontend for production.
+
+```bash
+npm run preview
+```
+
+Previews the production frontend build locally.
+
+```bash
+npm run lint
+```
+
+Runs ESLint checks.
+
+```bash
+npm start
+```
+
+Starts only the Socket.IO server.
+
+## Features
+
+- Real-time messaging with Socket.IO
+- Multiple chat rooms: Felles, Team, and Random
+- Display name input
+- Connection status indicator
+- Message length limit of 200 characters
+- Latest 50 messages stored per room during server runtime
+- Responsive layout for mobile and desktop screens
+
+## Docker
+
+Build and run the project with Docker Compose:
+
+```bash
 docker compose up -d --build
 ```
 
-### Konfigurasjon
-- `PORT` (server, default: 3001)
-- `CLIENT_ORIGIN` (CORS, f.eks. https://ditt-domene.no)
-- `VITE_SOCKET_URL` (valgfri i klient, brukes mest i dev)
+Stop the containers:
 
-## Teknisk oversikt (kort)
-- Server: `server/index.js`
-- Klient: `src/main.js`
-- Nginx: `nginx.conf`
-- Docker: `Dockerfile.server`, `Dockerfile.nginx`, `docker-compose.yml`
+```bash
+docker compose down
+```
 
-## Kontakt
-Legg inn kontaktinfo her (epost eller Slack-kanal).
+View logs:
+
+```bash
+docker compose logs -f
+```
